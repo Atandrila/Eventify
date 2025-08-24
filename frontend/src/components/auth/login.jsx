@@ -13,47 +13,37 @@ function Login() {
   const location = useLocation();
   
   const from = location.state?.from?.pathname || '/';
-
+  
   const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!email || !password) {
-    setError('Please fill in all fields');
-    return;
-  }
-
-  try {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.message || 'Login failed');
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please fill in all fields');
       return;
     }
-
-    // Save token & user in localStorage
-    localStorage.setItem('token', data.token);
-    login(data.user, data.token); // update context with user info
-
-    navigate(from, { replace: true });
-  } catch (err) {
-    setError('Something went wrong');
-  }
-};
-
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || 'Login failed');
+        return;
+      }
+      // Save token & user in localStorage
+      localStorage.setItem('token', data.token);
+      login(data.user, data.token); // update context with user info
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError('Something went wrong');
+    }
+  };
 
   return (
     <div className="login-page">
       <div className="login-container">
         <div className="login-header">
-          <div className="logo">
-            <span>E</span>
-          </div>
           <h2>Sign in to your account</h2>
           <p>
             Or{' '}
@@ -90,7 +80,6 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
           <div className="options">
             <label className="remember">
               <input
@@ -106,7 +95,6 @@ function Login() {
               <a href="#" className="link">Forgot your password?</a>
             </div>
           </div>
-
           <div>
             <button type="submit" className="submit-btn">
               <span className="icon">
@@ -119,42 +107,31 @@ function Login() {
           </div>
         </form>
       </div>
-
-      {/* ✅ Internal CSS */}
+      
       <style>{`
         .login-page {
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          background-color: #f9fafb;
+          background-color: transparent;
           padding: 2rem;
         }
         .login-container {
           max-width: 400px;
           width: 100%;
-          background: #fff;
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(10px);
           padding: 2rem;
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.3);
         }
         .login-header {
           text-align: center;
           margin-bottom: 2rem;
         }
-        .logo {
-          margin: 0 auto;
-          height: 48px;
-          width: 48px;
-          border-radius: 50%;
-          background-color: #4f46e5;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.25rem;
-          font-weight: bold;
-          color: #fff;
-        }
+        
         .login-header h2 {
           margin-top: 1rem;
           font-size: 1.75rem;
@@ -175,12 +152,13 @@ function Login() {
           color: #4338ca;
         }
         .error-box {
-          background-color: #fef2f2;
+          background-color: rgba(254, 242, 242, 0.7);
           color: #b91c1c;
           padding: 0.75rem;
           border-radius: 6px;
           margin-bottom: 1rem;
           font-size: 0.9rem;
+          backdrop-filter: blur(5px);
         }
         .login-form {
           display: flex;
@@ -193,14 +171,18 @@ function Login() {
         }
         .input-group input {
           padding: 0.75rem;
-          border: 1px solid #d1d5db;
+          border: 1px solid rgba(209, 213, 219, 0.5);
           border-radius: 6px;
           font-size: 1rem;
           margin-bottom: 0.75rem;
+          background: rgba(255, 255, 255, 0.5);
+          transition: all 0.2s ease;
         }
         .input-group input:focus {
           outline: none;
           border-color: #4f46e5;
+          background: rgba(255, 255, 255, 0.8);
+          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         .options {
           display: flex;
@@ -216,7 +198,7 @@ function Login() {
         }
         .submit-btn {
           width: 100%;
-          background-color: #4f46e5;
+          background-color: rgba(79, 70, 229, 0.8);
           color: #fff;
           border: none;
           padding: 0.75rem;
@@ -227,10 +209,12 @@ function Login() {
           align-items: center;
           justify-content: center;
           gap: 0.5rem;
-          transition: background 0.3s ease;
+          transition: all 0.3s ease;
         }
         .submit-btn:hover {
-          background-color: #4338ca;
+          background-color: rgba(67, 56, 202, 0.9);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
         .icon {
           display: flex;
@@ -239,7 +223,7 @@ function Login() {
         .lock-icon {
           width: 20px;
           height: 20px;
-          color: #c7d2fe;
+          color: rgba(199, 210, 254, 0.9);
         }
       `}</style>
     </div>

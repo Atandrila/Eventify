@@ -109,25 +109,25 @@ function About() {
           <div style={styles.card}>
             <h2 style={styles.sectionTitle}>For Students</h2>
             <ul style={styles.list}>
-              <li style={styles.listItem}>✔️ Discover and register for exciting events across campus</li>
-              <li style={styles.listItem}>✔️ Manage your event registrations in one place</li>
-              <li style={styles.listItem}>✔️ Receive certificates for completed events</li>
-              <li style={styles.listItem}>✔️ Get personalized event recommendations</li>
+              <li style={styles.listItem}>✔ Discover and register for exciting events across campus</li>
+              <li style={styles.listItem}>✔ Manage your event registrations in one place</li>
+              <li style={styles.listItem}>✔ Receive certificates for completed events</li>
+              <li style={styles.listItem}>✔ Get personalized event recommendations</li>
             </ul>
           </div>
 
           <div style={styles.card}>
             <h2 style={styles.sectionTitle}>For Club Organizers</h2>
             <ul style={styles.list}>
-              <li style={styles.listItem}>✔️ Create and manage events with ease</li>
-              <li style={styles.listItem}>✔️ Track event registrations and attendance</li>
-              <li style={styles.listItem}>✔️ Generate certificates for participants</li>
-              <li style={styles.listItem}>✔️ Access analytics and insights about your events</li>
+              <li style={styles.listItem}>✔ Create and manage events with ease</li>
+              <li style={styles.listItem}>✔ Track event registrations and attendance</li>
+              <li style={styles.listItem}>✔ Generate certificates for participants</li>
+              <li style={styles.listItem}>✔ Access analytics and insights about your events</li>
             </ul>
           </div>
         </div>
 
-<div style={styles.section}>
+        <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Our Team</h2>
           <p style={styles.text}>
             Eventify is developed by a team of passionate students and developers who understand the challenges

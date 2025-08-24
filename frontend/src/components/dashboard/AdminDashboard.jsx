@@ -6,7 +6,6 @@ import './AdminDashboard.css';
 function AdminDashboard() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-
   const [events, setEvents] = useState([]);
   const [stats, setStats] = useState({
     totalEvents: 0,
@@ -16,17 +15,15 @@ function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
-
-  // Inline editing states
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!currentUser) {
       navigate('/login');
       return;
     }
-
     const fetchEvents = async () => {
       try {
         const res = await fetch('/api/events');
@@ -41,7 +38,6 @@ function AdminDashboard() {
         setLoading(false);
       }
     };
-
     fetchEvents();
   }, [currentUser, navigate]);
 
@@ -53,7 +49,6 @@ function AdminDashboard() {
     setStats({ totalEvents, upcomingEvents, totalRegistrations, certificatesIssued });
   };
 
-  // Inline delete
   const handleDeleteEvent = async (id) => {
     if (!window.confirm('Are you sure you want to delete this event?')) return;
     setDeletingId(id);
@@ -72,7 +67,6 @@ function AdminDashboard() {
     }
   };
 
-  // Toggle status
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'upcoming' ? 'completed' : 'upcoming';
     try {
@@ -91,7 +85,6 @@ function AdminDashboard() {
     }
   };
 
-  // Start editing
   const handleEdit = (event) => {
     setEditingId(event._id);
     setEditForm({
@@ -104,7 +97,6 @@ function AdminDashboard() {
     });
   };
 
-  // Save inline edit
   const handleSaveEdit = async (id) => {
     try {
       const res = await fetch(`/api/events/${id}`, {
@@ -127,10 +119,20 @@ function AdminDashboard() {
   return (
     <div className="admin-root">
       <div className="admin-container">
+        {/* Mobile Header */}
+        <div className="mobile-header">
+          <button 
+            className="mobile-menu-btn" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? '✕' : '☰'}
+          </button>
+          <h1 className="mobile-title">Admin Dashboard</h1>
+        </div>
+        
         <div className="admin-layout">
-
           {/* Sidebar */}
-          <aside className="sidebar">
+          <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
             <div className="card sidebar-card">
               <h2 className="card-title">Admin Panel</h2>
               <ul className="nav-list">
@@ -140,33 +142,65 @@ function AdminDashboard() {
                 <li><Link to="/analytics" className="nav-link">📊 Analytics</Link></li>
               </ul>
             </div>
-
-           
           </aside>
-
+          
           {/* Main */}
           <main className="main">
             <header className="page-header">
               <h1 className="page-title">Admin Dashboard</h1>
               <p className="muted">Manage events and view analytics</p>
             </header>
-
+            
             {/* Stats */}
-            <section className="grid grid-4 gap">
-              <div className="card stat-card"><div className="stat-row"><div><p className="muted small">Total Events</p><p className="stat-value">{stats.totalEvents}</p></div><div className="stat-icon">🗓️</div></div></div>
-              <div className="card stat-card"><div className="stat-row"><div><p className="muted small">Upcoming Events</p><p className="stat-value">{stats.upcomingEvents}</p></div><div className="stat-icon">⏰</div></div></div>
-              <div className="card stat-card"><div className="stat-row"><div><p className="muted small">Total Registrations</p><p className="stat-value">{stats.totalRegistrations}</p></div><div className="stat-icon">👥</div></div></div>
-              <div className="card stat-card"><div className="stat-row"><div><p className="muted small">Certificates Issued</p><p className="stat-value">{stats.certificatesIssued}</p></div><div className="stat-icon">✅</div></div></div>
+            <section className="stats-grid">
+              <div className="card stat-card">
+                <div className="stat-row">
+                  <div>
+                    <p className="muted small">Total Events</p>
+                    <p className="stat-value">{stats.totalEvents}</p>
+                  </div>
+                  <div className="stat-icon">🗓️</div>
+                </div>
+              </div>
+              
+              <div className="card stat-card">
+                <div className="stat-row">
+                  <div>
+                    <p className="muted small">Upcoming Events</p>
+                    <p className="stat-value">{stats.upcomingEvents}</p>
+                  </div>
+                  <div className="stat-icon">⏰</div>
+                </div>
+              </div>
+              
+              <div className="card stat-card">
+                <div className="stat-row">
+                  <div>
+                    <p className="muted small">Total Registrations</p>
+                    <p className="stat-value">{stats.totalRegistrations}</p>
+                  </div>
+                  <div className="stat-icon">👥</div>
+                </div>
+              </div>
+              
+              <div className="card stat-card">
+                <div className="stat-row">
+                  <div>
+                    <p className="muted small">Certificates Issued</p>
+                    <p className="stat-value">{stats.certificatesIssued}</p>
+                  </div>
+                  <div className="stat-icon">✅</div>
+                </div>
+              </div>
             </section>
-
            
             <section className="card table-card">
               <div className="table-header">
                 <h2 className="card-title">Recent Events</h2>
               </div>
               <div className="table-scroll">
-                {loading ? <p>Loading events...</p> :
-                  events.length === 0 ? <p>No events found.</p> :
+                {loading ? <p className="loading-message">Loading events...</p> :
+                  events.length === 0 ? <p className="no-events">No events found.</p> :
                   <table className="table">
                     <thead>
                       <tr>
@@ -182,33 +216,74 @@ function AdminDashboard() {
                     <tbody>
                       {events.map(event => (
                         <tr key={event._id}>
-                          <td>{editingId === event._id ? <input type="text" value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} /> : event.title}</td>
-                          <td>{editingId === event._id ? <input type="date" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} /> : new Date(event.date).toLocaleDateString()}</td>
-                          <td>{editingId === event._id ? <input type="time" value={editForm.time} onChange={e => setEditForm({ ...editForm, time: e.target.value })} /> : event.time}</td>
-                          <td>{editingId === event._id ? <input type="text" value={editForm.location} onChange={e => setEditForm({ ...editForm, location: e.target.value })} /> : event.location}</td>
-                          <td>{editingId === event._id ? <input type="number" value={editForm.maxParticipants} onChange={e => setEditForm({ ...editForm, maxParticipants: e.target.value })} /> : event.maxParticipants}</td>
-                          <td>{editingId === event._id ? (
-                            <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })}>
-                              <option value="upcoming">upcoming</option>
-                              <option value="completed">completed</option>
-                              <option value="cancelled">cancelled</option>
-                            </select>
-                          ) : <span className={`badge ${event.status === 'completed' ? 'badge-green' : event.status === 'cancelled' ? 'badge-red' : 'badge-blue'}`}>{event.status}</span>}</td>
+                          <td>
+                            {editingId === event._id ? 
+                              <input type="text" value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} /> : 
+                              <span className="event-title">{event.title}</span>
+                            }
+                          </td>
+                          <td>
+                            {editingId === event._id ? 
+                              <input type="date" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} /> : 
+                              <span className="event-date">{new Date(event.date).toLocaleDateString()}</span>
+                            }
+                          </td>
+                          <td>
+                            {editingId === event._id ? 
+                              <input type="time" value={editForm.time} onChange={e => setEditForm({ ...editForm, time: e.target.value })} /> : 
+                              <span className="event-time">{event.time}</span>
+                            }
+                          </td>
+                          <td>
+                            {editingId === event._id ? 
+                              <input type="text" value={editForm.location} onChange={e => setEditForm({ ...editForm, location: e.target.value })} /> : 
+                              <span className="event-location">{event.location}</span>
+                            }
+                          </td>
+                          <td>
+                            {editingId === event._id ? 
+                              <input type="number" value={editForm.maxParticipants} onChange={e => setEditForm({ ...editForm, maxParticipants: e.target.value })} /> : 
+                              <span className="event-participants">{event.maxParticipants}</span>
+                            }
+                          </td>
                           <td>
                             {editingId === event._id ? (
-                              <>
-                                <button className="link link-primary" onClick={() => handleSaveEdit(event._id)}>Save</button>
-                                <button className="link link-muted" onClick={() => setEditingId(null)}>Cancel</button>
-                              </>
+                              <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })}>
+                                <option value="upcoming">upcoming</option>
+                                <option value="completed">completed</option>
+                                <option value="cancelled">cancelled</option>
+                              </select>
                             ) : (
-                              <>
-                                <button className="link link-primary" onClick={() => handleEdit(event)}>Edit</button>
-                                <button className="link link-danger" onClick={() => handleDeleteEvent(event._id)} disabled={deletingId === event._id}>
-                                  {deletingId === event._id ? 'Deleting...' : 'Delete'}
-                                </button>
-                                <button className="link link-muted" onClick={() => handleToggleStatus(event._id, event.status)}>Toggle</button>
-                              </>
+                              <span className={`badge ${event.status === 'completed' ? 'badge-green' : event.status === 'cancelled' ? 'badge-red' : 'badge-blue'}`}>
+                                {event.status}
+                              </span>
                             )}
+                          </td>
+                          <td>
+                            <div className="actions">
+                              {editingId === event._id ? (
+                                <>
+                                  <button className="btn btn-primary" onClick={() => handleSaveEdit(event._id)}>
+                                    Save
+                                  </button>
+                                  <button className="btn btn-outline" onClick={() => setEditingId(null)}>
+                                    Cancel
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button className="btn btn-primary" onClick={() => handleEdit(event)}>
+                                    Edit
+                                  </button>
+                                  <button className="btn btn-danger" onClick={() => handleDeleteEvent(event._id)} disabled={deletingId === event._id}>
+                                    {deletingId === event._id ? 'Deleting...' : 'Delete'}
+                                  </button>
+                                  <button className="btn btn-outline" onClick={() => handleToggleStatus(event._id, event.status)}>
+                                    Toggle
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -217,9 +292,6 @@ function AdminDashboard() {
                 }
               </div>
             </section>
-            
-            
-            
           </main>
         </div>
       </div>

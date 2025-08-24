@@ -4,10 +4,10 @@ import { useAuth } from "../../context/AuthContext";
 import ThemeToggle from "./ThemeToggle";
 
 // Import images
-import logo from "../../assets/images/logo.png";
-import dropdownArrow from "../../assets/images/dropdown-arrow.png";
-import menuIcon from "../../assets/images/menu.png";
-import closeIcon from "../../assets/images/close.png";
+import logo from "../../assets/images/logo.jpg";
+import dropdownArrow from "../../assets/images/dropdown-arrow.jpg";
+import menuIcon from "../../assets/images/menu.jpg";
+import closeIcon from "../../assets/images/close.jpg";
 
 function Header() {
   const { currentUser, logout } = useAuth();

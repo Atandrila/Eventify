@@ -203,11 +203,12 @@ function EventDetails() {
       </div>
       
       <style jsx>{`
-        .event-details-container {
-          min-height: 100vh;
-          background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-          padding: 2rem 1rem;
-        }
+       .event-details-container {
+  min-height: 100vh;
+  background: transparent; /* Remove solid background */
+  padding: 2rem 1rem;
+}
+
         
         .event-details {
           max-width: 900px;

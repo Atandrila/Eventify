@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import EventList from "../components/events/EventList";
-import Chatbot from "../components/chatbot/ChatBot";
+import Chatbot from "../components/chatbot/Chatbot";
 
 function Home() {
   const [events, setEvents] = useState([]);
@@ -455,11 +455,13 @@ function Home() {
         .features {
           padding: 5rem 1rem;
           background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
+           background: transparent;
         }
         
         .container {
           max-width: 1200px;
           margin: 0 auto;
+           background: transparent;
         }
         
         .features-title {
@@ -541,7 +543,7 @@ function Home() {
         /* Upcoming Events */
         .upcoming {
           padding: 5rem 1rem;
-          background: var(--white);
+           background: transparent;
         }
         
         .upcoming-header {

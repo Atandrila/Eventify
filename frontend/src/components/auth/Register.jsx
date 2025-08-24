@@ -9,53 +9,42 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('student');
   const [error, setError] = useState('');
-
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!name || !email || !password || !confirmPassword) {
-    setError('Please fill in all fields');
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    setError('Passwords do not match');
-    return;
-  }
-
-  try {
-    const response = await fetch('http://localhost:5000/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, role })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.message || 'Registration failed');
+    e.preventDefault();
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields');
       return;
     }
-
-    // Save token & user in localStorage
-    localStorage.setItem('token', data.token);
-    login(data.user, data.token); // update context with user info
-
-    navigate('/');
-  } catch (err) {
-    setError('Something went wrong');
-  }
-};
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || 'Registration failed');
+        return;
+      }
+    
+      localStorage.setItem('token', data.token);
+      login(data.user, data.token); // update context with user info
+      navigate('/');
+    } catch (err) {
+      setError('Something went wrong');
+    }
+  };
 
   return (
     <div className="register-container">
       <div className="register-box">
-        <div className="logo-circle">
-          <span className="logo-text">E</span>
-        </div>
         <h2 className="title">Create your account</h2>
         <p className="subtitle">
           Or{' '}
@@ -63,10 +52,8 @@ function Register() {
             sign in to your existing account
           </Link>
         </p>
-
         <form onSubmit={handleSubmit} className="form">
           {error && <div className="error-message">{error}</div>}
-
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <input
@@ -77,7 +64,6 @@ function Register() {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="email">Email address</label>
             <input
@@ -88,7 +74,6 @@ function Register() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -99,7 +84,6 @@ function Register() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="confirm-password">Confirm Password</label>
             <input
@@ -110,7 +94,6 @@ function Register() {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="role">Role</label>
             <select
@@ -122,113 +105,103 @@ function Register() {
               <option value="admin">Club Admin</option>
             </select>
           </div>
-
           <button type="submit" className="submit-btn">Register</button>
         </form>
       </div>
-
-      {/* Inline CSS */}
+      
       <style jsx>{`
         .register-container {
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #f9fafb;
+          background: transparent;
           padding: 20px;
         }
-
         .register-box {
-          max-width: 400px;
+          max-width: 600px;
           width: 100%;
-          background: #fff;
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(10px);
           padding: 30px;
-          border-radius: 8px;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           text-align: center;
         }
-
-        .logo-circle {
-          width: 50px;
-          height: 50px;
-          background: #4f46e5;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto;
-        }
-
-        .logo-text {
-          color: white;
-          font-weight: bold;
-          font-size: 20px;
-        }
-
         .title {
           font-size: 24px;
           font-weight: bold;
           margin: 15px 0;
           color: #111827;
         }
-
         .subtitle {
           font-size: 14px;
           color: #6b7280;
           margin-bottom: 20px;
         }
-
         .link {
           color: #4f46e5;
           text-decoration: none;
+          font-weight: 500;
         }
-
+        .link:hover {
+          color: #4338ca;
+        }
         .form {
           text-align: left;
         }
-
         .form-group {
           margin-bottom: 15px;
         }
-
         label {
           display: block;
           font-size: 14px;
           margin-bottom: 5px;
           color: #374151;
+          font-weight: 500;
         }
-
         input, select {
           width: 100%;
-          padding: 10px;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
+          padding: 12px;
+          border: 1px solid rgba(209, 213, 219, 0.5);
+          border-radius: 8px;
           font-size: 14px;
+          background: rgba(255, 255, 255, 0.5);
+          transition: all 0.2s ease;
         }
-
+        input:focus, select:focus {
+          outline: none;
+          border-color: #4f46e5;
+          background: rgba(255, 255, 255, 0.8);
+          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
         .error-message {
-          background: #fee2e2;
+          background: rgba(254, 226, 226, 0.7);
           color: #b91c1c;
-          padding: 10px;
-          border-radius: 6px;
-          margin-bottom: 15px;
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 20px;
           text-align: center;
+          backdrop-filter: blur(5px);
         }
-
         .submit-btn {
           width: 100%;
-          background: #4f46e5;
+          background: rgba(79, 70, 229, 0.8);
           color: #fff;
-          padding: 12px;
+          padding: 14px;
           border: none;
-          border-radius: 6px;
+          border-radius: 8px;
           font-size: 16px;
+          font-weight: 600;
           cursor: pointer;
           margin-top: 10px;
+          transition: all 0.3s ease;
         }
-
         .submit-btn:hover {
-          background: #4338ca;
+          background: rgba(67, 56, 202, 0.9);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
       `}</style>
     </div>
