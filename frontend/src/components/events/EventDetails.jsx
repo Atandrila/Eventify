@@ -1,85 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-
+import { eventAPI, registrationAPI } from '../../services/api';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 function EventDetails() {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationId, setRegistrationId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const mockEvents = [
-      {
-        id: 1,
-        title: "Web Development Workshop",
-        category: "workshop",
-        date: "2023-12-15",
-        time: "14:00",
-        location: "Computer Lab A",
-        description: "Learn modern web development techniques including HTML5, CSS3, and JavaScript. This hands-on workshop will cover responsive design and interactive web applications. Perfect for beginners and intermediate learners looking to enhance their web development skills.",
-        maxParticipants: 30,
-        registered: 25,
-        image: "/src/assets/images/event1.jpg",
-        status: "upcoming"
-      },
-      {
-        id: 2,
-        title: "Annual Sports Meet",
-        category: "sports",
-        date: "2023-12-20",
-        time: "09:00",
-        location: "University Stadium",
-        description: "Join us for the annual sports meet featuring various athletic competitions, team sports, and fun activities for all students. Participate in track and field events, team sports, and enjoy a day of healthy competition and camaraderie.",
-        maxParticipants: 200,
-        registered: 180,
-        image: "/src/assets/images/event2.jpg",
-        status: "upcoming"
-      },
-      {
-        id: 3,
-        title: "Cultural Festival",
-        category: "cultural",
-        date: "2023-11-25",
-        time: "18:00",
-        location: "Main Auditorium",
-        description: "Experience diverse cultural performances, music, dance, and art exhibitions from around the world. Celebrate the rich cultural diversity of our university community through performances, food, and interactive exhibits.",
-        maxParticipants: 500,
-        registered: 450,
-        image: "/src/assets/images/event3.jpg",
-        status: "completed"
-      },
-      {
-        id: 4,
-        title: "AI & Machine Learning Seminar",
-        category: "academic",
-        date: "2023-12-25",
-        time: "10:00",
-        location: "Lecture Hall B",
-        description: "Explore the latest trends in Artificial Intelligence and Machine Learning with industry experts and researchers. Learn about cutting-edge applications, ethical considerations, and future directions in AI and ML.",
-        maxParticipants: 100,
-        registered: 75,
-        image: "/src/assets/images/event4.jpg",
-        status: "upcoming"
+    const fetchEvent = async () => {
+      try {
+        const res = await eventAPI.getEventById(id);
+        setEvent(res.data);
+        // Check if user is registered
+        const regRes = await registrationAPI.getUserRegistrations();
+        const registeredEvent = regRes.data.find(reg => reg.event && reg.event._id === id);
+        if (registeredEvent) {
+          setIsRegistered(true);
+          setRegistrationId(registeredEvent._id);
+        }
+      } catch (error) {
+        console.error('Error fetching event:', error);
+      } finally {
+        setLoading(false);
       }
-    ];
-
-    const foundEvent = mockEvents.find(e => e.id === parseInt(id));
-    setEvent(foundEvent);
-    setLoading(false);
+    };
+    fetchEvent();
   }, [id]);
 
-  const handleRegister = () => {
-    if (!currentUser) {
-      navigate('/login', { state: { from: `/events/${id}` } });
-      return;
+  const handleRegister = async () => {
+    try {
+      const res = await registrationAPI.registerForEvent(id);
+      alert('Successfully registered!');
+      setIsRegistered(true);
+      setRegistrationId(res.data.registration._id);
+      // Refresh event data
+      const eventRes = await eventAPI.getEventById(id);
+      setEvent(eventRes.data);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to register');
     }
-    alert('Successfully registered for the event!');
   };
 
-  const handleUnregister = () => {
-    alert('Successfully unregistered from the event!');
+  const handleUnregister = async () => {
+    try {
+      if (registrationId) {
+        await registrationAPI.unregisterFromEvent(registrationId);
+        alert('Successfully unregistered!');
+        setIsRegistered(false);
+        setRegistrationId(null);
+        // Refresh event data
+        const eventRes = await eventAPI.getEventById(id);
+        setEvent(eventRes.data);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to unregister');
+    }
   };
 
   const handleDownloadCertificate = () => {
@@ -89,27 +68,10 @@ function EventDetails() {
   if (loading) {
     return (
       <div className="loading-section">
-        <div className="spinner"></div>
+        <div className="spinner-container">
+          <div className="spinner"></div>
+        </div>
         <p>Loading event details...</p>
-        <style>{`
-          .loading-section {
-            text-align: center;
-            padding: 80px;
-          }
-          .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4f46e5;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     );
   }
@@ -117,179 +79,539 @@ function EventDetails() {
   if (!event) {
     return (
       <div className="not-found">
+        <div className="not-found-icon">
+          <i className="fas fa-calendar-times"></i>
+        </div>
         <h3>Event not found</h3>
-        <p>The event you're looking for doesn't exist or has been removed.</p>
-        <Link to="/events" className="btn">Browse Events</Link>
-        <style>{`
-          .not-found {
-            text-align: center;
-            padding: 80px;
-          }
-          .not-found h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-          }
-          .not-found p {
-            color: #666;
-            margin-bottom: 20px;
-          }
-          .btn {
-            background: #4f46e5;
-            color: #fff;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 6px;
-          }
-        `}</style>
+        <p>We couldn't find the event you're looking for.</p>
+        <Link to="/events" className="btn btn-outline">
+          <i className="fas fa-arrow-left"></i> Browse Events
+        </Link>
       </div>
     );
   }
 
-  const registeredPercentage = (event.registered / event.maxParticipants) * 100;
-  const statusColor = event.status === 'completed' ? 'green' : 'blue';
+  const registeredPercentage = ((event.registered || 0) / event.maxParticipants) * 100;
+  const statusClass =
+    event.status === 'completed'
+      ? 'status completed'
+      : event.status === 'canceled'
+      ? 'status canceled'
+      : 'status upcoming';
 
   return (
-    <div className="event-details">
-      <Link to="/events" className="back-link">← Back to Events</Link>
-      <div className="event-card">
-        <img src={event.image} alt={event.title} />
-        <div className="event-content">
-          <div className="event-header">
-            <h1>{event.title}</h1>
-            <span className={`status ${statusColor}`}>{event.status}</span>
+    <div className="event-details-container">
+      <div className="event-details">
+        <Link to="/events" className="back-link">
+          <i className="fas fa-arrow-left"></i> Back to Events
+        </Link>
+        
+        <div className="event-card">
+          <div className="event-image-container">
+            <img src={event.image} alt={event.title} />
+            <div className="event-overlay">
+              <span className={statusClass}>{event.status}</span>
+            </div>
+            <div className="event-text-overlay">
+              <div className="event-header">
+                <h1>{event.title}</h1>
+                <div className="event-meta">
+                  <span className="event-category">
+                    <i className="fas fa-tag"></i> {event.category}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="event-info">
+                <div className="info-item">
+                  <div className="info-icon">
+                    <i className="fas fa-calendar-alt"></i>
+                  </div>
+                  <div className="info-text">
+                    <p className="info-label">Date & Time</p>
+                    <p>{new Date(event.date).toLocaleDateString()} at {event.time}</p>
+                  </div>
+                </div>
+                
+                <div className="info-item">
+                  <div className="info-icon">
+                    <i className="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div className="info-text">
+                    <p className="info-label">Location</p>
+                    <p>{event.location}</p>
+                  </div>
+                </div>
+                
+                <div className="info-item">
+                  <div className="info-icon">
+                    <i className="fas fa-users"></i>
+                  </div>
+                  <div className="info-text">
+                    <p className="info-label">Attendees</p>
+                    <p>{event.registered || 0}/{event.maxParticipants}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="event-info">
-            <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()} at {event.time}</p>
-            <p><strong>Location:</strong> {event.location}</p>
-            <p><strong>Participants:</strong> {event.registered}/{event.maxParticipants}</p>
-            <p><strong>Category:</strong> {event.category}</p>
-          </div>
-          <div className="description">
-            <h3>Description</h3>
-            <p>{event.description}</p>
-          </div>
-          <div className="progress">
-            <div className="progress-bar" style={{ width: `${registeredPercentage}%` }}></div>
-          </div>
-          <div className="buttons">
-            {event.status === 'upcoming' ? (
-              <>
-                <button onClick={handleRegister} className="btn primary">Register</button>
-                <button onClick={handleUnregister} className="btn danger">Unregister</button>
-              </>
-            ) : (
-              <button onClick={handleDownloadCertificate} className="btn success">Download Certificate</button>
-            )}
-            <button className="btn outline">Share Event</button>
+          
+          <div className="event-content">
+            <div className="description">
+              <h3>About this event</h3>
+              <p>{event.description}</p>
+            </div>
+            
+            <div className="registration-progress">
+              <div className="progress-info">
+                <span>Registration Progress</span>
+                <span>{Math.round(registeredPercentage)}%</span>
+              </div>
+              <div className="progress-container">
+                <div 
+                  className="progress-bar" 
+                  style={{ width: `${registeredPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <div className="action-buttons">
+              {event.status === 'upcoming' ? (
+                <>
+                  {!isRegistered ? (
+                    <button onClick={handleRegister} className="btn btn-primary">
+                      <i className="fas fa-check-circle"></i> Register Now
+                    </button>
+                  ) : (
+                    <button onClick={handleUnregister} className="btn btn-danger">
+                      <i className="fas fa-times-circle"></i> Cancel Registration
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button onClick={handleDownloadCertificate} className="btn btn-success">
+                  <i className="fas fa-download"></i> Download Certificate
+                </button>
+              )}
+              
+              <button className="btn btn-outline">
+                <i className="fas fa-share-alt"></i> Share Event
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      <style>{`
+      
+      <style jsx>{`
+        .event-details-container {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+          padding: 2rem 1rem;
+        }
+        
         .event-details {
-          padding: 40px;
-          max-width: 1000px;
+          max-width: 900px;
           margin: 0 auto;
         }
+        
         .back-link {
-          display: inline-block;
-          margin-bottom: 20px;
-          color: #4f46e5;
-          text-decoration: none;
-          font-weight: 500;
-        }
-        .event-card {
-          background: #fff;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .event-card img {
-          width: 100%;
-          height: 300px;
-          object-fit: cover;
-        }
-        .event-content {
-          padding: 20px;
-        }
-        .event-header {
-          display: flex;
-          justify-content: space-between;
+          display: inline-flex;
           align-items: center;
-          margin-bottom: 20px;
+          color: #4a6cf7;
+          text-decoration: none;
+          font-weight: 600;
+          margin-bottom: 1.5rem;
+          transition: all 0.3s ease;
         }
+        
+        .back-link:hover {
+          color: #3451d4;
+          transform: translateX(-5px);
+        }
+        
+        .back-link i {
+          margin-right: 0.5rem;
+        }
+        
+        .event-card {
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .event-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .event-image-container {
+          position: relative;
+          height: 450px;
+          overflow: hidden;
+        }
+        
+        .event-image-container img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s ease;
+        }
+        
+        .event-card:hover .event-image-container img {
+          transform: scale(1.05);
+        }
+        
+        .event-overlay {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          z-index: 2;
+        }
+        
+        .status {
+          padding: 0.5rem 1rem;
+          border-radius: 30px;
+          font-size: 0.85rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .status.upcoming {
+          background-color: #e3f2fd;
+          color: #1976d2;
+        }
+        
+        .status.completed {
+          background-color: #e8f5e9;
+          color: #388e3c;
+        }
+        
+        .status.canceled {
+          background-color: #ffebee;
+          color: #d32f2f;
+        }
+        
+        .event-text-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 2rem;
+          background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4) 60%, transparent);
+          color: white;
+          z-index: 1;
+        }
+        
+        .event-header {
+          margin-bottom: 1.5rem;
+        }
+        
         .event-header h1 {
           font-size: 2rem;
-          margin: 0;
+          color: white;
+          margin-bottom: 0.5rem;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-        .status {
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 14px;
-          font-weight: bold;
-        }
-        .status.blue {
-          background: #e0e7ff;
-          color: #1e40af;
-        }
-        .status.green {
-          background: #d1fae5;
-          color: #065f46;
-        }
-        .event-info p {
-          margin: 8px 0;
-          color: #555;
-        }
-        .description h3 {
-          margin: 20px 0 10px;
-        }
-        .description p {
-          line-height: 1.6;
-          color: #444;
-        }
-        .progress {
-          background: #e5e7eb;
-          height: 8px;
-          border-radius: 4px;
-          margin: 20px 0;
-        }
-        .progress-bar {
-          background: #4f46e5;
-          height: 8px;
-          border-radius: 4px;
-        }
-        .buttons {
+        
+        .event-meta {
           display: flex;
-          gap: 10px;
+          align-items: center;
+        }
+        
+        .event-category {
+          display: inline-flex;
+          align-items: center;
+          background-color: rgba(255, 255, 255, 0.2);
+          color: white;
+          padding: 0.4rem 0.8rem;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          backdrop-filter: blur(5px);
+        }
+        
+        .event-category i {
+          margin-right: 0.4rem;
+          font-size: 0.8rem;
+        }
+        
+        .event-info {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1.5rem;
+        }
+        
+        .info-item {
+          display: flex;
+          align-items: flex-start;
+        }
+        
+        .info-icon {
+          background-color: rgba(255, 255, 255, 0.2);
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 1rem;
+          color: white;
+          backdrop-filter: blur(5px);
+        }
+        
+        .info-text {
+          flex: 1;
+        }
+        
+        .info-label {
+          font-size: 0.85rem;
+          color: rgba(255, 255, 255, 0.8);
+          margin: 0 0 0.25rem 0;
+        }
+        
+        .info-text p:last-child {
+          margin: 0;
+          font-weight: 600;
+          color: white;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .event-content {
+          padding: 2rem;
+        }
+        
+        .description {
+          margin-bottom: 2rem;
+        }
+        
+        .description h3 {
+          font-size: 1.25rem;
+          color: #2d3748;
+          margin-bottom: 0.75rem;
+          position: relative;
+          padding-bottom: 0.5rem;
+        }
+        
+        .description h3:after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 50px;
+          height: 3px;
+          background: linear-gradient(90deg, #4a6cf7, #8b5cf6);
+          border-radius: 3px;
+        }
+        
+        .description p {
+          color: #4a5568;
+          line-height: 1.6;
+        }
+        
+        .registration-progress {
+          margin-bottom: 2rem;
+        }
+        
+        .progress-info {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 0.5rem;
+          font-size: 0.9rem;
+          color: #4a5568;
+        }
+        
+        .progress-container {
+          height: 10px;
+          background-color: #edf2f7;
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        
+        .progress-bar {
+          height: 100%;
+          background: linear-gradient(90deg, #4a6cf7, #8b5cf6);
+          border-radius: 10px;
+          transition: width 0.5s ease;
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 1rem;
           flex-wrap: wrap;
         }
+        
         .btn {
-          padding: 10px 16px;
-          border-radius: 6px;
-          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+          font-weight: 600;
           cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          transition: all 0.3s ease;
+          text-decoration: none;
+          font-size: 1rem;
         }
-        .btn.primary {
-          background: #4f46e5;
-          color: #fff;
+        
+        .btn i {
+          margin-right: 0.5rem;
         }
-        .btn.danger {
-          background: #dc2626;
-          color: #fff;
+        
+        .btn-primary {
+          background: linear-gradient(135deg, #4a6cf7, #3b5bdb);
+          color: white;
+          box-shadow: 0 4px 15px rgba(74, 108, 247, 0.3);
         }
-        .btn.success {
-          background: #059669;
-          color: #fff;
+        
+        .btn-primary:hover {
+          background: linear-gradient(135deg, #3b5bdb, #2c4fd8);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
         }
-        .btn.outline {
-          border: 1px solid #ccc;
-          background: transparent;
-          color: #333;
+        
+        .btn-danger {
+          background: linear-gradient(135deg, #f56565, #e53e3e);
+          color: white;
+          box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+        }
+        
+        .btn-danger:hover {
+          background: linear-gradient(135deg, #e53e3e, #c53030);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
+        }
+        
+        .btn-success {
+          background: linear-gradient(135deg, #48bb78, #38a169);
+          color: white;
+          box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+        
+        .btn-success:hover {
+          background: linear-gradient(135deg, #38a169, #2f855a);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        .btn-outline {
+          background-color: transparent;
+          border: 2px solid #cbd5e0;
+          color: #4a5568;
+        }
+        
+        .btn-outline:hover {
+          background-color: #f7fafc;
+          border-color: #a0aec0;
+          transform: translateY(-2px);
+        }
+        
+        .loading-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 50vh;
+        }
+        
+        .spinner-container {
+          width: 60px;
+          height: 60px;
+          margin-bottom: 1.5rem;
+        }
+        
+        .spinner {
+          width: 100%;
+          height: 100%;
+          border: 4px solid rgba(74, 108, 247, 0.2);
+          border-radius: 50%;
+          border-top: 4px solid #4a6cf7;
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .not-found {
+          text-align: center;
+          padding: 3rem;
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+          max-width: 500px;
+          margin: 0 auto;
+        }
+        
+        .not-found-icon {
+          font-size: 4rem;
+          color: #cbd5e0;
+          margin-bottom: 1rem;
+        }
+        
+        .not-found h3 {
+          font-size: 1.5rem;
+          color: #2d3748;
+          margin-bottom: 0.5rem;
+        }
+        
+        .not-found p {
+          color: #718096;
+          margin-bottom: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+          .event-image-container {
+            height: 250px;
+          }
+          
+          .event-header h1 {
+            font-size: 1.5rem;
+          }
+          
+          .event-info {
+            grid-template-columns: 1fr;
+          }
+          
+          .action-buttons {
+            flex-direction: column;
+          }
+          
+          .btn {
+            width: 100%;
+          }
+        }
+        
+        @media (min-width: 769px) {
+          .event-card {
+            flex-direction: row;
+          }
+          
+          .event-image-container {
+            width: 60%;
+            height: auto;
+            min-height: 500px;
+          }
+          
+          .event-content {
+            width: 40%;
+            padding: 2.5rem;
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .event-image-container {
+            min-height: 600px;
+          }
         }
       `}</style>
     </div>
   );
 }
-
 export default EventDetails;
