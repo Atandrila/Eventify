@@ -13,29 +13,42 @@ function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields');
+  if (!name || !email || !password || !confirmPassword) {
+    setError('Please fill in all fields');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    setError('Passwords do not match');
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:5000/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, role })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message || 'Registration failed');
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+    // Save token & user in localStorage
+    localStorage.setItem('token', data.token);
+    login(data.user, data.token); // update context with user info
 
-    const userData = {
-      id: Date.now(),
-      name,
-      email,
-      role,
-    };
-
-    login(userData);
     navigate('/');
-  };
+  } catch (err) {
+    setError('Something went wrong');
+  }
+};
 
   return (
     <div className="register-container">

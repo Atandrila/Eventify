@@ -14,24 +14,38 @@ function Login() {
   
   const from = location.state?.from?.pathname || '/';
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!email || !password) {
-      setError('Please fill in all fields');
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!email || !password) {
+    setError('Please fill in all fields');
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message || 'Login failed');
       return;
     }
-    
-    const userData = {
-      id: 1,
-      name: 'John Doe',
-      email,
-      role: 'student'
-    };
-    
-    login(userData);
+
+    // Save token & user in localStorage
+    localStorage.setItem('token', data.token);
+    login(data.user, data.token); // update context with user info
+
     navigate(from, { replace: true });
-  };
+  } catch (err) {
+    setError('Something went wrong');
+  }
+};
+
 
   return (
     <div className="login-page">
