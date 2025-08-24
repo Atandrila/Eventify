@@ -6,12 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "react-scripts build",
-    "start": "react-scripts start",
-    "lint": "eslint .",
+    "build": "vite build",
     "preview": "vite preview",
-    "test": "react-scripts test",
-  "eject": "react-scripts eject"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.0.0",
@@ -21,8 +18,7 @@
     "jwt-decode": "^4.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.8.2",
-    "react-scripts": "^5.0.1"
+    "react-router-dom": "^7.8.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
