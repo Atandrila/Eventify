@@ -45,9 +45,6 @@ function Register() {
   return (
     <div className="register-container">
       <div className="register-box">
-        <div className="logo-circle">
-          <span className="logo-text">E</span>
-        </div>
         <h2 className="title">Create your account</h2>
         <p className="subtitle">
           Or{' '}
