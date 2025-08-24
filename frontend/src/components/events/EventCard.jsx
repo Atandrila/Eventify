@@ -44,9 +44,12 @@ function EventCard({ event }) {
           </div>
         </div>
 
-        <Link to={`/events/${event.id}`} className="view-details">
-          View Details
-        </Link>
+       
+<Link to={`/events/${event._id}`} className="view-details">
+  View Details
+</Link>
+
+
       </div>
 
       <style>{`
