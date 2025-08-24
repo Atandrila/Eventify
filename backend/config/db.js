@@ -1,4 +1,3 @@
-// Config/dbConnection.js
 import mongoose from "mongoose";
 
 let isConnected = false;
@@ -14,7 +13,6 @@ const connectDB = async () => {
 
   try {
     const conn = await mongoose.connect(uri, {
-      dbName: process.env.MONGO_DB_NAME || undefined,
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
