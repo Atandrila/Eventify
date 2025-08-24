@@ -13,7 +13,7 @@ const app = express();
 
 // CORS config
 app.use(cors({
-  origin: '*',
+  origin: ['https://eventify-indol.vercel.app/'],
   credentials: true
 }));
 

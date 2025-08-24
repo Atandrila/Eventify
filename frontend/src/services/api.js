@@ -1,21 +1,21 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const API_URL = '/api'
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
-// Create axios instance with default config
+// Create axios instance
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-})
+});
 
 // Auth APIs
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
   getCurrentUser: () => api.get('/auth'),
-}
+};
 
 // Event APIs
 export const eventAPI = {
@@ -24,7 +24,7 @@ export const eventAPI = {
   createEvent: (eventData) => api.post('/events', eventData),
   updateEvent: (id, eventData) => api.put(`/events/${id}`, eventData),
   deleteEvent: (id) => api.delete(`/events/${id}`),
-}
+};
 
 // Registration APIs
 export const registrationAPI = {
@@ -32,37 +32,32 @@ export const registrationAPI = {
   unregisterFromEvent: (registrationId) => api.delete(`/registrations/${registrationId}`),
   getUserRegistrations: () => api.get('/registrations/user'),
   getEventRegistrations: (eventId) => api.get(`/registrations/event/${eventId}`),
-}
+};
 
-// Add interceptor to include auth token in requests
+// Request Interceptor: Add Auth Token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers['x-auth-token'] = token; // Change here
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
-api.interceptors.request.use((req) => {
-  if (localStorage.getItem('token')) {
-    req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
-  }
-  return req;
-});
 
+// Response Interceptor: Handle Unauthorized (401)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
-export default api
+export default api;
