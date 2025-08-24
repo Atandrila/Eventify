@@ -1,11 +1,13 @@
 {
   "name": "eventify-frontend",
+  "homepage": ".",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "react-scripts build",
+   "start": "react-scripts start",
     "lint": "eslint .",
     "preview": "vite preview"
   },
