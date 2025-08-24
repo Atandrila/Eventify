@@ -4,10 +4,9 @@ import { useAuth } from "../../context/AuthContext";
 import ThemeToggle from "./ThemeToggle";
 
 // Import images
-import logo from "../../assets/images/logo.png";
-import dropdownArrow from "../../assets/images/dropdown-arrow.png";
-import menuIcon from "../../assets/images/menu.png";
-import closeIcon from "../../assets/images/close.png";
+import logo from "../../assets/images/logo.jpg";
+import menuIcon from "../../assets/images/menu.jpg";
+import closeIcon from "../../assets/images/close.jpg";
 
 function Header() {
   const { currentUser, logout } = useAuth();
@@ -21,7 +20,6 @@ function Header() {
 
   return (
     <>
-      {/* Inline CSS */}
       <style>{`
         .header {
           position: sticky;
@@ -76,66 +74,20 @@ function Header() {
           align-items: center;
           gap: 16px;
         }
-        .user-menu {
-          position: relative;
-        }
-        .user-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          color: #444;
-          background: none;
-          border: none;
-          cursor: pointer;
-        }
-        .user-btn:hover {
-          color: #4f46e5;
-        }
-        .user-name {
-          font-weight: 500;
-        }
-        .icon {
-          width: 20px;
-          height: 20px;
-        }
-        .dropdown {
-          position: absolute;
-          right: 0;
-          top: 40px;
-          width: 160px;
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          display: none;
-        }
-        .user-menu:hover .dropdown {
-          display: block;
-        }
-        .logout-btn {
-          width: 100%;
-          text-align: left;
-          padding: 8px 12px;
-          color: red;
-          background: none;
-          border: none;
-          cursor: pointer;
-          border-radius: 6px;
-        }
-        .logout-btn:hover {
-          background: #f5f5f5;
-        }
         .auth-links {
           display: flex;
           gap: 8px;
         }
-        .login-btn {
+        .login-btn, .logout-btn {
           padding: 8px 16px;
           border-radius: 6px;
           background: #4f46e5;
           color: white;
           text-decoration: none;
+          border: none;
+          cursor: pointer;
         }
-        .login-btn:hover {
+        .login-btn:hover, .logout-btn:hover {
           background: #4338ca;
         }
         .register-btn {
@@ -227,21 +179,12 @@ function Header() {
               <ThemeToggle />
 
               {currentUser ? (
-                <div className="user-menu">
-                  <button className="user-btn">
-                    <span className="user-name">
-                      Hello, {currentUser.name}
-                    </span>
-                    <img src={dropdownArrow} alt="Dropdown" className="icon" />
+                <>
+                  <span>Hello, {currentUser.name}</span>
+                  <button onClick={handleLogout} className="logout-btn">
+                    Logout
                   </button>
-
-                  {/* Dropdown */}
-                  <div className="dropdown">
-                    <button onClick={handleLogout} className="logout-btn">
-                      Logout
-                    </button>
-                  </div>
-                </div>
+                </>
               ) : (
                 <div className="auth-links">
                   <Link to="/login" className="login-btn">
@@ -289,7 +232,6 @@ function Header() {
                   >
                     Dashboard
                   </MobileNavLink>
-
                   {currentUser.role === "admin" && (
                     <MobileNavLink
                       to="/create-event"
