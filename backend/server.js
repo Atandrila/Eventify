@@ -1,58 +1,51 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
+// server.js
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const authRoutes = require('./routes/authRoutes');
-const eventRoutes = require('./routes/eventRoutes');
-const registrationRoutes = require('./routes/registrationRoutes');
-const connectDB = require('./config/db');
+import authRoutes from "./routes/authRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
+import registrationRoutes from "./routes/registrationRoutes.js";
+import connectDB from "./config/db.js";
 
 dotenv.config();
 
 const app = express();
+
 const allowedOrigins = [
-  'https://eventify-3tec.vercel.app/', 
-  'http://localhost:5173/',
-  'http://localhost:3000/'
+  "https://eventify-3tec.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
 ];
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-};
-
-app.use(cors(corsOptions));
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow tools/curl
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 // Body parser
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/registrations', registrationRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/registrations", registrationRoutes);
 
 // Health check
-app.get('/', (req, res) => {
-  res.json({ ok: true, message: 'Eventify API running' });
+app.get("/", (req, res) => {
+  res.json({ ok: true, message: "Eventify API running" });
 });
 
-// DB connect (only once in cold start)
+// Connect to MongoDB
 connectDB();
 
-// ❗️DO NOT app.listen() on Vercel
-module.exports = app;
+// Export for Vercel
+export default app;
