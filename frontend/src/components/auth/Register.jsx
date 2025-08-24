@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api'; 
 
 function Register() {
   const [name, setName] = useState('');
@@ -9,42 +10,44 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('student');
   const [error, setError] = useState('');
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!name || !email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
+
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role })
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.message || 'Registration failed');
-        return;
-      }
-    
+     
+      const response = await api.post('/auth/register', { name, email, password, role });
+      const data = response.data;
+
+      // Save token & user in localStorage
       localStorage.setItem('token', data.token);
-      login(data.user, data.token); // update context with user info
+      login(data.user, data.token); 
+
       navigate('/');
     } catch (err) {
-      setError('Something went wrong');
+      setError(err.response?.data?.message || 'Registration failed');
     }
   };
 
   return (
     <div className="register-container">
       <div className="register-box">
+        <div className="logo-circle">
+          <span className="logo-text">E</span>
+        </div>
         <h2 className="title">Create your account</h2>
         <p className="subtitle">
           Or{' '}
@@ -52,8 +55,10 @@ function Register() {
             sign in to your existing account
           </Link>
         </p>
+
         <form onSubmit={handleSubmit} className="form">
           {error && <div className="error-message">{error}</div>}
+
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <input
@@ -64,6 +69,7 @@ function Register() {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="email">Email address</label>
             <input
@@ -74,6 +80,7 @@ function Register() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -84,6 +91,7 @@ function Register() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="confirm-password">Confirm Password</label>
             <input
@@ -94,6 +102,7 @@ function Register() {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="role">Role</label>
             <select
@@ -105,10 +114,10 @@ function Register() {
               <option value="admin">Club Admin</option>
             </select>
           </div>
+
           <button type="submit" className="submit-btn">Register</button>
         </form>
       </div>
-      
       <style jsx>{`
         .register-container {
           min-height: 100vh;

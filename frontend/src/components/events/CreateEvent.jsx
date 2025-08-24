@@ -21,28 +21,31 @@ function CreateEvent() {
   };
 
   const onSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch("http://localhost:5000/api/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData)
-      });
-      if (!res.ok) {
-        throw new Error("Failed to create event");
-      }
-      await res.json();
-      alert("Event created successfully!");
-      navigate("/dashboard/admin");
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      setLoading(false);
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const res = await fetch(`${process.env.VITE_API_BASE_URL}/events`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create event");
     }
-  };
+
+    await res.json();
+    alert("Event created successfully!");
+    navigate("/dashboard/admin");
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="create-event-page">

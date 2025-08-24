@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
+import api from '../../services/api';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,20 +21,11 @@ function Login() {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.message || 'Login failed');
-        return;
-      }
-      // Save token & user in localStorage
-      localStorage.setItem('token', data.token);
-      login(data.user, data.token); // update context with user info
-      navigate(from, { replace: true });
+      const response = await api.post('/auth/login', { email, password });
+     const data = response.data;
+     localStorage.setItem('token', data.token);
+     login(data.user, data.token);
+     navigate(from, { replace: true });
     } catch (err) {
       setError('Something went wrong');
     }

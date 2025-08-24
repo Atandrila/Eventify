@@ -15,7 +15,7 @@ function EventDetails() {
       try {
         const res = await eventAPI.getEventById(id);
         setEvent(res.data);
-        // Check if user is registered
+      
         const regRes = await registrationAPI.getUserRegistrations();
         const registeredEvent = regRes.data.find(reg => reg.event && reg.event._id === id);
         if (registeredEvent) {
@@ -37,7 +37,6 @@ function EventDetails() {
       alert('Successfully registered!');
       setIsRegistered(true);
       setRegistrationId(res.data.registration._id);
-      // Refresh event data
       const eventRes = await eventAPI.getEventById(id);
       setEvent(eventRes.data);
     } catch (err) {

@@ -1,36 +1,57 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
+// server.js (or app.js)
+import express from "express";
+import { config } from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import mongoose from "mongoose";
 
-const authRoutes = require('./routes/authRoutes');
-const eventRoutes = require('./routes/eventRoutes');
-const registrationRoutes = require('./routes/registrationRoutes');
+// Import routes
+import authRouter from "./routes/authRoutes.js";
+import eventRouter from "./routes/eventRoutes.js";
+import registrationRouter from "./routes/registrationRoutes.js";
 
-dotenv.config();
 
-const app = express();
+config(); // load .env
+const PORT = process.env.PORT || 8000;
 
-// CORS config
-app.use(cors({
-  origin: ['https://eventify-indol.vercel.app/'],
-  credentials: true
-}));
+export const app = express();
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB Connected'))
-.catch(err => console.log(err));
-
-// Middleware
+// ===== Middleware =====
+app.use(
+  cors({
+    origin: ["https://eventify-indol.vercel.app", "http://localhost:5173"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/registrations', registrationRoutes);
+// ===== Default Route =====
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is running successfully!",
+  });
+});
 
-module.exports = app;
+// ===== Routes =====
+app.use("/api/auth", authRouter);
+app.use("/api/events", eventRouter);
+app.use("/api/registrations", registrationRouter);
+
+// ===== Database Connection =====
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB Error:", err));
+
+// ===== Start Server =====
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+

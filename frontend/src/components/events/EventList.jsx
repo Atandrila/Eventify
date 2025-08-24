@@ -9,11 +9,14 @@ function EventList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
+  
+  const API_URL = process.env.VITE_API_BASE_URL|| 'http://localhost:5000/api';
+
   // Fetch events from backend
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/events');
+        const res = await axios.get(`${API_URL}/events`);
         setEvents(res.data);
         setFilteredEvents(res.data);
       } catch (err) {
@@ -23,7 +26,7 @@ function EventList() {
       }
     };
     fetchEvents();
-  }, []);
+  }, [API_URL]);
 
   // Filter events based on category and search term
   useEffect(() => {
