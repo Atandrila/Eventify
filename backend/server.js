@@ -1,17 +1,15 @@
 // server.js
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import registrationRoutes from "./routes/registrationRoutes.js";
-import connectDB from "./config/db.js";
-
-dotenv.config();
 
 const app = express();
 
+// CORS setup
 const allowedOrigins = [
   "https://eventify-3tec.vercel.app",
   "http://localhost:5173",
@@ -21,18 +19,17 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
 );
 
-// Body parser
+// Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -44,8 +41,4 @@ app.get("/", (req, res) => {
   res.json({ ok: true, message: "Eventify API running" });
 });
 
-// Connect to MongoDB
-connectDB();
-
-// Export for Vercel
 export default app;

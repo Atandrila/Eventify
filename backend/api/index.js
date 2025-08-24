@@ -1,5 +1,9 @@
-const app = require('../server');
+// api/index.js
+import vercelExpress from "vercel-express";
+import app from "../server.js";
+import connectDB from "../config/db.js";
 
-module.exports = (req, res) => {
-  app(req, res); 
-};
+// Connect DB once per cold start
+await connectDB();
+
+export default vercelExpress(app);
